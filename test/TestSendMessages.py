@@ -18,6 +18,7 @@
 import __init__
 from librocketmqclientpython import *
 import time
+from message import Message
 
 topic = 'test'
 name_srv = '127.0.0.1:9876'
@@ -40,10 +41,8 @@ def send_messages_sync(count):
         print 'start sending...'
         body = 'hi rmq, now is ' + \
             time.strftime('%Y.%m.%d', time.localtime(time.time()))
-        msg = CreateMessage(topic)
-        SetMessageBody(msg, body)
-        result = SendMessageSync(producer, msg)
-        DestroyMessage(msg)
+        with Message(topic, body) as msg:
+            result = SendMessageSync(producer, msg)
         print '[RMQ-PRODUCER]start sending...done, msg id = ' + \
             result.GetMsgId()
 
@@ -53,14 +52,9 @@ def send_messages_sync_with_map(count):
     for a in range(count):
         body = 'hi rmq, now is ' + \
             time.strftime('%Y.%m.%d', time.localtime(time.time()))
-        msg = CreateMessage(topic)
-        SetMessageBody(msg, body)
-
-        SetMessageProperty(msg, 'name', 'test')
-        SetMessageProperty(msg, 'id', str(time.time()))
-
-        result = SendMessageSync(producer, msg)
-        DestroyMessage(msg)
+        with Message(topic, body, properties = {'name': 'test', 'id': str(time.time())},
+            tag = tag) as msg:
+            result = SendMessageSync(producer, msg)
         print '[RMQ-PRODUCER]start sending...done, msg id = ' + \
             result.GetMsgId()
 
